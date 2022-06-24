@@ -14,17 +14,14 @@ BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}Jinja2>=0:devel/py-Jinja2@${PY_FLAVOR} \
 		gn:devel/gn \
 		ninja:devel/ninja
 
-USES=		ninja:build pkgconfig:build \
+USES=		ninja:make pkgconfig:build \
 		compiler:c++17-lang python:3.7+
 
 BINARY_ALIAS=	python3=${PYTHON_CMD}
-#CONFLICTS=	firefox since it has this in its build?
-#
-# For a list of available build arguments, take a look at gn/skia.gni
-GN_ARGS+=	is_bsd=true \
-		skia_gl_standard="gl" \
-		is_linux=true		 # not really but ya know.
-# Check lang/v8-beta
+MAKE_ARGS=      -C out/Release
+USE_LDCONFIG=	yes
+GN_ARGS+=	is_official_build=true \
+		skia_gl_standard="gl"
 
 USE_GITHUB=	nodefault
 GH_ACCOUNT=	google
@@ -37,11 +34,13 @@ CONFIGURE_ENV+= NINJAFLAGS="-j${MAKE_JOBS_NUMBER}" \
 		NINJA_PATH="${LOCALBASE}/bin/ninja"  \
 		PATH=${CONFIGURE_WRKSRC}/bin:${LOCALBASE}/bin:${PATH}
 
-pre-build:
-		@cd ${WRKSRC}
-		${MKDIR} ${WRKSRC}/out/build
-		@${EXEC} ${LOCALBASE}/bin/gn --root=${WRKSRC} -v gen ${WRKSRC}/out/build
-		${TOUCH} ${WRKSRC}/BUILD.gn
+pre-configure:
+	@cd ${WRKSRC}
+	@${MKDIR} ${WRKSRC}/out/Release/gen/include
+
+do-configure:
+	@cd ${WRKSRC} && ${SETENV} ${CONFIGURE_ENV} gn gen out/Release --args='${GN_ARGS}'
+
 # check lang/v8
 #pre-build:
 #		@cd ${WRKSRC}
@@ -58,6 +57,7 @@ pre-build:
 
 #PORTDATA=	*
 #PORTDOCS=	*
+# Check lang/v8-beta
 #post-patch:
 #	 @${REINPLACE_CMD} 's|%%LOCALBASE%%|${LOCALBASE}|' \
 #		 ${WRKSRC}/core/Common/3dParty/icu/icu.pri \
