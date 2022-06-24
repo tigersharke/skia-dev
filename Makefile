@@ -20,9 +20,21 @@ USES=		ninja:make pkgconfig:build \
 BINARY_ALIAS=	python3=${PYTHON_CMD}
 MAKE_ARGS=      -C out/Release
 USE_LDCONFIG=	yes
+CXXFLAGS=	"-I/usr/include/zlib.h"
 GN_ARGS+=	is_official_build=true \
-		skia_gl_standard="gl"
-
+		skia_gl_standard="gl" \
+		skia_use_dng_sdk=false \
+		skia_use_system_zlib=true \
+		skia_use_libpng=false \
+		skia_use_zlib=false \
+		skia_use_libjpeg_turbo=false \
+		skia_use_harfbuzz=false \
+		skia_use_libwebp=false \
+		skia_use_expat=false
+# Find how to tell it where zlib is or to somehow replace thirdparty stuff with system things
+#		skia_use_system_zlib=true
+# ninja: error: '../../third_party/externals/zlib/google/compression_utils_portable.cc', 
+# needed by 'obj/third_party/externals/zlib/google/libcompression_utils_portable.compression_utils_portable.o', missing and no known rule to make it
 USE_GITHUB=	nodefault
 GH_ACCOUNT=	google
 GH_PROJECT=	skia
@@ -39,7 +51,7 @@ pre-configure:
 	@${MKDIR} ${WRKSRC}/out/Release/gen/include
 
 do-configure:
-	@cd ${WRKSRC} && ${SETENV} ${CONFIGURE_ENV} gn gen out/Release --args='${GN_ARGS}'
+	@cd ${WRKSRC} && ${SETENV} ${CONFIGURE_ENV} gn gen ${WRKSRC}/out/Release --args='${GN_ARGS}'
 
 # check lang/v8
 #pre-build:
