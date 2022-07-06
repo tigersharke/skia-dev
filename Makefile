@@ -1,5 +1,5 @@
 PORTNAME=	skia
-DISTVERSION=	g20220619
+DISTVERSION=	g20220630
 CATEGORIES=	graphics
 PKGNAMESUFFIX=	-dev
 DISTNAME=	${PORTNAME}-${GH_TAGNAME}
@@ -13,24 +13,34 @@ LICENSE=	BSD3CLAUSE
 BUILD_DEPENDS=	${PYTHON_PKGNAMEPREFIX}Jinja2>=0:devel/py-Jinja2@${PY_FLAVOR} \
 		gn:devel/gn \
 		ninja:devel/ninja
+LIB_DEPENDS=	libpng.so:graphics/png \
+		libturbojpeg.so:graphics/libjpeg-turbo \
+		libharfbuzz.so:print/harfbuzz \
+		libwebp.so:graphics/webp \
+		libwebpmux.so:graphics/webp \
+		libfreetype.so:print/freetype2
 
-USES=		ninja:make pkgconfig:build \
+USES=		ninja:make pkgconfig:build jpeg \
 		compiler:c++17-lang python:3.7+
 
 BINARY_ALIAS=	python3=${PYTHON_CMD}
 MAKE_ARGS=      -C out/Release
 USE_LDCONFIG=	yes
-CXXFLAGS=	"-I/usr/include/zlib.h"
+CXXFLAGS+=	-I/usr/include/zlib.h \
+		-I/usr/local/include/jpeglib.h \
+		-I/usr/local/include \
+		-I/usr/include
+LDFLAGS+=	-L/usr/local/lib
 GN_ARGS+=	is_official_build=true \
+		is_component_build=false \
 		skia_gl_standard="gl" \
 		skia_use_dng_sdk=false \
-		skia_use_system_zlib=true \
-		skia_use_libpng=false \
+		skia_use_expat=false \
 		skia_use_zlib=false \
-		skia_use_libjpeg_turbo=false \
-		skia_use_harfbuzz=false \
-		skia_use_libwebp=false \
-		skia_use_expat=false
+		skia_use_system_harfbuzz=true \
+		skia_use_system_libpng=true \
+		skia_use_system_libjpeg_turbo=true \
+		skia_use_system_libwebp=true 
 # Find how to tell it where zlib is or to somehow replace thirdparty stuff with system things
 #		skia_use_system_zlib=true
 # ninja: error: '../../third_party/externals/zlib/google/compression_utils_portable.cc', 
@@ -38,7 +48,7 @@ GN_ARGS+=	is_official_build=true \
 USE_GITHUB=	nodefault
 GH_ACCOUNT=	google
 GH_PROJECT=	skia
-GH_TAGNAME=	9e568b3f646411fdb2986a9f7eab1b10ed42b525
+GH_TAGNAME=	4d39707554522d0668943212b7678b226e48a505
 
 WRKSRC=		${WRKDIR}/${PORTNAME}-${GH_TAGNAME}
 
